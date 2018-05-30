@@ -57,10 +57,20 @@ seccion <- get_file_print_info("seccion")
 subfamilia <- get_file_print_info("subfamilia")
 tienda <- get_file_print_info("tienda")
 
+tienda$NOMBRE <- str_trim(tienda$NOMBRE)
+producto$NOMBREPAIS <- str_trim(producto$NOMBREPAIS)
+
+lapply(list, function)
+str_trim("  This is an example of whitespace.  ")
+
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
 # then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
 # definetely by CODVENTA - CODCABECERA is a fraudster =P
 ticket <- merge_dfs_left_outer(ticket.lineas, ticket.cabecera, c("CODVENTA")) 
 ticket_with_product <- merge_dfs_left_outer(ticket, producto, c("CODPRODUCTO"))
 
-
+# Checking if sold price > cost price (and if sold price = recommended sell price)
+tp <- ticket_with_product
+tp$VENDIDOPOR <- tp$IMPORTETOTAL / tp$TOTALUNIDADES
+inconsistences <- ticket_with_product[ticket_with_product[, "IMPORTETOTAL" / "TOTALUNIDADES"] > "COSTE"]
+data[data[, "Var1"]>10, ]
