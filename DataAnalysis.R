@@ -1,4 +1,6 @@
 library(knitr)
+library(stringr)
+
 
 path.prefix <- "GourmetDB/"
 path.suffix <- ".csv"
@@ -25,7 +27,22 @@ get_file_print_info <- function(path.name) {
   
 }
 
+merge_dfs_left_outer <- function(df1, df2, by.clause) {
+  df <- merge(df1, df2, by=by.clause, all.x = TRUE, path.suffix = FALSE) 
+  
+  # Cleaning the colnames
+  colnames(df) <- str_replace_all(colnames(df), '.x', '')
+  colnames(df) <- str_replace_all(colnames(df), '.y', '')
+  
+  # Removing duplicated columns
+  df <- df[, !duplicated(colnames(df), fromLast = TRUE)] 
+  
+  print(colnames(df))
+  return(df)
+}
 
+# Reading all the datasets available and printing info about them
+#---------------------------------------------------------------------
 ticket.cabecera <- get_file_print_info("cabeceraticket")
 ticket.lineas <- get_file_print_info("lineasticket")
 cliente <- get_file_print_info("cliente")
@@ -39,3 +56,11 @@ regiongeografica <- get_file_print_info("regiongeografica")
 seccion <- get_file_print_info("seccion")
 subfamilia <- get_file_print_info("subfamilia")
 tienda <- get_file_print_info("tienda")
+
+# To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
+# then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
+# definetely by CODVENTA - CODCABECERA is a fraudster =P
+ticket <- merge_dfs_left_outer(ticket.lineas, ticket.cabecera, c("CODVENTA")) 
+ticket_with_product <- merge_dfs_left_outer(ticket, producto, c("CODPRODUCTO"))
+
+
