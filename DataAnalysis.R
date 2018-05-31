@@ -1,5 +1,7 @@
 library(knitr)
 library(stringr)
+library(plyr)
+library(dplyr) # mutate_if
 
 
 path.prefix <- "GourmetDB/"
@@ -22,7 +24,10 @@ get_file_print_info <- function(path.name) {
   
   print("-------- colnames ------------")
   print(colnames(file))
-  #kable(data.frame(variables=names(file),clase=as.vector(file)))
+  
+  #Removing additional space
+  colwise(str_trim)(producto) 
+  
   return(file)
   
 }
@@ -57,11 +62,6 @@ seccion <- get_file_print_info("seccion")
 subfamilia <- get_file_print_info("subfamilia")
 tienda <- get_file_print_info("tienda")
 
-tienda$NOMBRE <- str_trim(tienda$NOMBRE)
-producto$NOMBREPAIS <- str_trim(producto$NOMBREPAIS)
-
-lapply(list, function)
-str_trim("  This is an example of whitespace.  ")
 
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
 # then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
