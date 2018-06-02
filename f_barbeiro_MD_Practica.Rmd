@@ -1,7 +1,18 @@
+---
+title: "fbarbeiro_MD_Practica"
+author: "Fernando Barbeiro"
+date: "6/2/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
 library(knitr)
 library(stringr)
-library(plotrix) # pie3d
+library(plotrix)
+knitr::opts_chunk$set(echo = TRUE)
+```
 
+```{r, out.width="1000px", out.height="1000px"}
 
 path.prefix <- "GourmetDB/"
 path.suffix <- ".csv"
@@ -23,9 +34,6 @@ get_file_print_info <- function(path.name) {
   
   print("-------- colnames ------------")
   print(colnames(file))
-  
-  #Removing additional space
-  colwise(str_trim)(producto) 
   
   return(file)
   
@@ -65,6 +73,7 @@ tienda <- get_file_print_info("tienda")
 ticket.cabecera$NOMBRETIENDA <- str_trim(ticket.cabecera$NOMBRETIENDA)
 ticket.lineas$CODPRODUCTO <- str_trim(ticket.lineas$CODPRODUCTO)
 
+
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
 # then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
 # definetely by CODVENTA - CODCABECERA is a fraudster =P
@@ -77,6 +86,8 @@ head(tp)
 nrow(tp)
 summary(tp)
 unlist(lapply(tp, function(x) any(is.na(x))))
+#write.csv(tp, file = "tp.csv")
+
 res <- sapply(tp, class)
 kable(data.frame(variables=names(res),clase=as.vector(res)))
 
@@ -90,19 +101,10 @@ head(table(tp$MARCA))
 lbls <- paste(names(dist_pais),  ": " , dist_pais, sep= "" ) 
 pie3D(dist_pais
       , radius= 0.9
-      , labelcex=  0.7
+      , labelcex=  0.5
       , labels = lbls
       , explode= 0.1
       , main= "Distribución por Sexo" , col = rainbow(length(lbls)
       ))
 
-
-#write.csv(tp, file = "tp.csv")
-
-?kable
-
-# Checking if sold price > cost price (and if sold price = recommended sell price)
-tp <- ticket_with_product
-tp$VENDIDOPOR <- tp$IMPORTETOTAL / tp$TOTALUNIDADES
-inconsistences <- ticket_with_product[ticket_with_product[, "IMPORTETOTAL" / "TOTALUNIDADES"] > "COSTE"]
-data[data[, "Var1"]>10, ]
+```
