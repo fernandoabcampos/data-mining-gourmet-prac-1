@@ -1,6 +1,8 @@
 library(knitr)
 library(stringr)
 library(plotrix) # pie3d
+library(arules)
+library(arulesViz)
 
 
 path.prefix <- "GourmetDB/"
@@ -25,7 +27,7 @@ get_file_print_info <- function(path.name) {
   print(colnames(file))
   
   #Removing additional space
-  colwise(str_trim)(producto) 
+  #colwise(str_trim)(producto) 
   
   return(file)
   
@@ -64,6 +66,7 @@ tienda <- get_file_print_info("tienda")
 # Trim to eliminate additional blank space before merging
 ticket.cabecera$NOMBRETIENDA <- str_trim(ticket.cabecera$NOMBRETIENDA)
 ticket.lineas$CODPRODUCTO <- str_trim(ticket.lineas$CODPRODUCTO)
+producto$DESCRIPCIÓN <- str_trim(producto$DESCRIPCIÓN)
 
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
 # then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
@@ -93,8 +96,36 @@ pie3D(dist_pais
       , labelcex=  0.7
       , labels = lbls
       , explode= 0.1
-      , main= "Distribución por Sexo" , col = rainbow(length(lbls)
+      , main= "Distribución por País" , col = rainbow(length(lbls)
       ))
+
+
+# 
+tp [,  "CODPRODUCTO" ]
+
+
+# It makes sense to split by CODVENTA as CODCLIENTE is not properly filled - and the CODVENTA will give us an understanding of what was sold together
+ppv <- split (x = tp [,  "CODPRODUCTO" ], f = tp$CODVENTA) 
+ppv <- lapply (ppv, unique)
+ppv <- as (ppv,  "transactions" )
+inspect(ppv[1:3])
+class(ppv)
+head(ppv)
+
+inspect(head(ppv))
+apriori(ppv, parameter=list(support= 0.001 , confidence= 0.4 ))
+rules_ppv <- apriori(ppv, parameter=list(support= 0.002 , confidence= 0.2 ))
+
+items(rules_ppv)
+inspect(rules_ppv)
+
+rules_conf <- sort (rules_ppv, by= "confidence" , decreasing= TRUE ) 
+inspect(rules_conf)
+rules_lift <- sort (rules_ppv, by= "lift" , decreasing= TRUE ) 
+inspect(rules_lift)
+plot(rules_ppv)
+
+
 
 
 #write.csv(tp, file = "tp.csv")
