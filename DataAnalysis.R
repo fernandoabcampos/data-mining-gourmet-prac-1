@@ -65,6 +65,7 @@ tienda <- get_file_print_info("tienda")
 
 # Trim to eliminate additional blank space before merging
 ticket.cabecera$NOMBRETIENDA <- str_trim(ticket.cabecera$NOMBRETIENDA)
+ticket.lineas$NOMBRETIENDA <- str_trim(ticket.lineas$NOMBRETIENDA)
 ticket.lineas$CODPRODUCTO <- str_trim(ticket.lineas$CODPRODUCTO)
 producto$DESCRIPCIÓN <- str_trim(producto$DESCRIPCIÓN)
 
@@ -100,21 +101,56 @@ pie3D(dist_pais
       ))
 
 
-# 
-tp [,  "CODPRODUCTO" ]
 
 
 # It makes sense to split by CODVENTA as CODCLIENTE is not properly filled - and the CODVENTA will give us an understanding of what was sold together
-ppv <- split (x = tp [,  "CODPRODUCTO" ], f = tp$CODVENTA) 
+ppv <- split (x = tp[,  "CODPRODUCTO" ], f = tp$CODVENTA) 
 ppv <- lapply (ppv, unique)
 ppv <- as (ppv,  "transactions" )
-inspect(ppv[1:3])
+
 class(ppv)
 head(ppv)
-
 inspect(head(ppv))
-apriori(ppv, parameter=list(support= 0.001 , confidence= 0.4 ))
-rules_ppv <- apriori(ppv, parameter=list(support= 0.002 , confidence= 0.2 ))
+
+ppvt2 <- data.frame(TId = tp$CODVENTA, items = c(paste0("Producto=", tp$CODPRODUCTO), paste0("Tienda=", tp$NOMBRETIENDA)))
+ppvt2 <- lapply(ppvt2, unique)
+ppvt2 <- as(ppvt2, "transactions")
+class(ppvt2)
+head(ppvt2)
+inspect(head(ppvt2))
+
+
+?split
+str(tp[, c("CODPRODUCTO", "NOMBRETIENDA")])
+
+colnames(df) <- c("COD_PRODUCT", "STORE", "SELL_ID")
+str(df)
+print(unlist(lapply(df, function(x) any(is.na(x)))))
+ppvt <- split(x = df[, c("COD_PRODUCT", "STORE")], f = df$SELL_ID)
+ppvt <- lapply (ppvt, unique)
+ppvt <- as (ppvt,  "transactions" )
+
+
+
+tp$NOMBRETIENDA <- as.factor(tp$NOMBRETIENDA)
+tp$CODPRODUCTO <- as.factor(tp$CODPRODUCTO)
+str(tp)
+
+print(unlist(lapply(ppvt, function(x) any(is.na(x)))))
+
+ppvt <- lapply (ppvt, unique)
+ppvt <- as (ppvt,  "transactions" )
+class(ppvt)
+head(ppvt)
+inspect(head(ppvt))
+
+showMethods("coerce", classes="transactions")
+
+
+
+
+
+rules_ppv <- apriori(ppv, parameter=list(support= 0.001 , confidence= 0.4 ))
 
 items(rules_ppv)
 inspect(rules_ppv)
@@ -125,17 +161,49 @@ rules_lift <- sort (rules_ppv, by = "lift" , decreasing = TRUE )
 inspect(rules_lift)
 plot(rules_ppv)
 
+summary(quality(rules_ppv))
+
 class(rules_ppv[1:3])
 
 
 
+
+df2 <- count(tp, c('CODPRODUCTO','DESCRIPCIÓN'))
+head(df2[order(df2$freq, decreasing =  TRUE ), ], n = 10)
+
+
+
+producto.quantity <- aggregate(data.frame(count = tp$DESCRIPCIÓN), list(value = tp$DESCRIPCIÓN, code=tp$CODPRODUCTO), length)
+producto.a <- aggregate(data.frame(count = tp$CODPRODUCTO), list(value = tp$CODPRODUCTO), length)
+# How many products are?
+nrow(producto)
+nrow(producto.quantity) 
+nrow(producto.a) 
+
+head(producto.quantity[order(producto.quantity$count, decreasing =  TRUE ), ], n = 10)
+head(producto.a[order(producto.a$count, decreasing =  TRUE ), ], n = 10)
+
+
+nrow(tp[tp$DESCRIPCIÓN == 'Tinto Reserva 95', ])
+
+?kable
+
+# Checking if sold price <= cost price (and NO DISCOUNT)
+tp <- ticket_with_product
+tp$VENDIDOPOR <- tp$IMPORTETOTAL / tp$TOTALUNIDADES
+tp$COSTETOTAL <- tp$COSTE * tp$TOTALUNIDADES
+inconsistences <- tp[tp$VENDIDOPOR <= tp$COSTE, ]
+inconsistences <- inconsistences[inconsistences$NOMBREPROMOCION == "", ]
+inconsistences$PERDIDA <- inconsistences$COSTETOTAL - inconsistences$IMPORTETOTAL
+sum(inconsistences$PERDIDA)
+
+
+
+summary(quality(rules))
 
 #write.csv(tp, file = "tp.csv")
 
 ?kable
 
 # Checking if sold price > cost price (and if sold price = recommended sell price)
-tp <- ticket_with_product
-tp$VENDIDOPOR <- tp$IMPORTETOTAL / tp$TOTALUNIDADES
-inconsistences <- ticket_with_product[ticket_with_product[, "IMPORTETOTAL" / "TOTALUNIDADES"] > "COSTE"]
-data[data[, "Var1"]>10, ]
+
