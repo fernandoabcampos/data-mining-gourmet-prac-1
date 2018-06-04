@@ -119,11 +119,13 @@ rules_ppv <- apriori(ppv, parameter=list(support= 0.002 , confidence= 0.2 ))
 items(rules_ppv)
 inspect(rules_ppv)
 
-rules_conf <- sort (rules_ppv, by= "confidence" , decreasing= TRUE ) 
+rules_conf <- sort (rules_ppv, by = "confidence" , decreasing = TRUE ) 
 inspect(rules_conf)
-rules_lift <- sort (rules_ppv, by= "lift" , decreasing= TRUE ) 
+rules_lift <- sort (rules_ppv, by = "lift" , decreasing = TRUE ) 
 inspect(rules_lift)
 plot(rules_ppv)
+
+class(rules_ppv[1:3])
 
 
 
