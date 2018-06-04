@@ -104,7 +104,7 @@ pie3D(dist_pais
       , labelcex=  0.5
       , labels = lbls
       , explode= 0.1
-      , main= "Distribución por Sexo" , col = rainbow(length(lbls)
+      , main= "Distribución por País" , col = rainbow(length(lbls)
       ))
 
 ```
