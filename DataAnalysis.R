@@ -67,6 +67,7 @@ tienda <- get_file_print_info("tienda")
 ticket.cabecera$NOMBRETIENDA <- str_trim(ticket.cabecera$NOMBRETIENDA)
 ticket.lineas$NOMBRETIENDA <- str_trim(ticket.lineas$NOMBRETIENDA)
 ticket.lineas$CODPRODUCTO <- str_trim(ticket.lineas$CODPRODUCTO)
+ticket.lineas$CODVENTA <- str_trim(ticket.lineas$CODVENTA)
 producto$DESCRIPCIÓN <- str_trim(producto$DESCRIPCIÓN)
 
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
@@ -108,48 +109,12 @@ ppv <- split (x = tp[,  "CODPRODUCTO" ], f = tp$CODVENTA)
 ppv <- lapply (ppv, unique)
 ppv <- as (ppv,  "transactions" )
 
+new_label <- do.call(paste, c(producto[match(itemLabels(ppv), producto$CODPRODUCTO), c("CODPRODUCTO", "DESCRIPCIÓN", "MARCA")], sep = " - ")) 
+itemLabels(ppv) <- new_label
+
 class(ppv)
 head(ppv)
 inspect(head(ppv))
-
-ppvt2 <- data.frame(TId = tp$CODVENTA, items = c(paste0("Producto=", tp$CODPRODUCTO), paste0("Tienda=", tp$NOMBRETIENDA)))
-ppvt2 <- lapply(ppvt2, unique)
-ppvt2 <- as(ppvt2, "transactions")
-class(ppvt2)
-head(ppvt2)
-inspect(head(ppvt2))
-
-
-?split
-str(tp[, c("CODPRODUCTO", "NOMBRETIENDA")])
-
-colnames(df) <- c("COD_PRODUCT", "STORE", "SELL_ID")
-str(df)
-print(unlist(lapply(df, function(x) any(is.na(x)))))
-ppvt <- split(x = df[, c("COD_PRODUCT", "STORE")], f = df$SELL_ID)
-ppvt <- lapply (ppvt, unique)
-ppvt <- as (ppvt,  "transactions" )
-
-
-
-tp$NOMBRETIENDA <- as.factor(tp$NOMBRETIENDA)
-tp$CODPRODUCTO <- as.factor(tp$CODPRODUCTO)
-str(tp)
-
-print(unlist(lapply(ppvt, function(x) any(is.na(x)))))
-
-ppvt <- lapply (ppvt, unique)
-ppvt <- as (ppvt,  "transactions" )
-class(ppvt)
-head(ppvt)
-inspect(head(ppvt))
-
-showMethods("coerce", classes="transactions")
-
-
-
-
-
 rules_ppv <- apriori(ppv, parameter=list(support= 0.001 , confidence= 0.4 ))
 
 items(rules_ppv)
@@ -159,17 +124,40 @@ rules_conf <- sort (rules_ppv, by = "confidence" , decreasing = TRUE )
 inspect(rules_conf)
 rules_lift <- sort (rules_ppv, by = "lift" , decreasing = TRUE ) 
 inspect(rules_lift)
+summary(quality(rules_ppv))
 plot(rules_ppv)
 
-summary(quality(rules_ppv))
-
-class(rules_ppv[1:3])
 
 
 
+df <- tp[, c("CODPRODUCTO", "NOMBRETIENDA", "CODVENTA")]
+str(df)
+#?write.csv
+write.csv(df, file = "df.csv", row.names=FALSE)
 
-df2 <- count(tp, c('CODPRODUCTO','DESCRIPCIÓN'))
-head(df2[order(df2$freq, decreasing =  TRUE ), ], n = 10)
+ppvt <- read.transactions(file = "df.csv", rm.duplicates =  TRUE , skip =  1 , sep = "," ) 
+new_label_t <- ifelse(!is.na(match(itemLabels(ppvt), producto$CODPRODUCTO)), do.call(paste, c(producto[match(itemLabels(ppvt), producto$CODPRODUCTO), c("CODPRODUCTO", "DESCRIPCIÓN", "MARCA")], sep = " - ")), itemLabels(ppvt))
+new_label_t
+itemLabels(ppvt) <- new_label_t
+head(ppvt)
+class(ppvt)
+inspect(head(ppvt))
+rules_ppvt <- apriori(ppvt, parameter=list(support= 0.002 , confidence= 0.5 ))
+
+items(rules_ppvt)
+inspect(rules_ppvt)
+
+rules_conft <- sort (rules_ppvt, by = "confidence" , decreasing = TRUE ) 
+inspect(rules_conft)
+rules_liftt <- sort (rules_ppvt, by = "lift" , decreasing = TRUE ) 
+inspect(rules_liftt)
+summary(quality(rules_ppvt))
+
+plot(rules_ppvt)
+
+
+
+
 
 
 
@@ -186,7 +174,6 @@ head(producto.a[order(producto.a$count, decreasing =  TRUE ), ], n = 10)
 
 nrow(tp[tp$DESCRIPCIÓN == 'Tinto Reserva 95', ])
 
-?kable
 
 # Checking if sold price <= cost price (and NO DISCOUNT)
 tp <- ticket_with_product
