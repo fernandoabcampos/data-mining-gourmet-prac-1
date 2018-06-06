@@ -108,15 +108,14 @@ pie3D(dist_pais
 ppv <- split (x = tp[,  "CODPRODUCTO" ], f = tp$CODVENTA) 
 ppv <- lapply (ppv, unique)
 ppv <- as (ppv,  "transactions" )
-
 new_label <- do.call(paste, c(producto[match(itemLabels(ppv), producto$CODPRODUCTO), c("CODPRODUCTO", "DESCRIPCIÓN", "MARCA")], sep = " - ")) 
 itemLabels(ppv) <- new_label
-
 class(ppv)
-head(ppv)
 inspect(head(ppv))
 rules_ppv <- apriori(ppv, parameter=list(support= 0.001 , confidence= 0.4 ))
 
+
+plot(rules_ppv)
 items(rules_ppv)
 inspect(rules_ppv)
 
@@ -125,22 +124,17 @@ inspect(rules_conf)
 rules_lift <- sort (rules_ppv, by = "lift" , decreasing = TRUE ) 
 inspect(rules_lift)
 summary(quality(rules_ppv))
-plot(rules_ppv)
+
 
 
 
 
 df <- tp[, c("CODPRODUCTO", "NOMBRETIENDA", "CODVENTA")]
-str(df)
-#?write.csv
 write.csv(df, file = "df.csv", row.names=FALSE)
 
 ppvt <- read.transactions(file = "df.csv", rm.duplicates =  TRUE , skip =  1 , sep = "," ) 
 new_label_t <- ifelse(!is.na(match(itemLabels(ppvt), producto$CODPRODUCTO)), do.call(paste, c(producto[match(itemLabels(ppvt), producto$CODPRODUCTO), c("CODPRODUCTO", "DESCRIPCIÓN", "MARCA")], sep = " - ")), itemLabels(ppvt))
-new_label_t
 itemLabels(ppvt) <- new_label_t
-head(ppvt)
-class(ppvt)
 inspect(head(ppvt))
 rules_ppvt <- apriori(ppvt, parameter=list(support= 0.002 , confidence= 0.5 ))
 
