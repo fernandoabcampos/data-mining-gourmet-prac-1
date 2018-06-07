@@ -28,7 +28,7 @@ get_file_print_info <- function(path.name) {
   
   #Removing additional space
   #colwise(str_trim)(producto) 
-  
+  file <- as.data.frame(sapply(file, toupper))
   return(file)
   
 }
