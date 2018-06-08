@@ -65,10 +65,19 @@ tienda <- get_file_print_info("tienda")
 
 # Trim to eliminate additional blank space before merging
 ticket.cabecera$NOMBRETIENDA <- str_trim(ticket.cabecera$NOMBRETIENDA)
+ticket.cabecera$CODCLIENTE <- str_trim(ticket.cabecera$CODCLIENTE)
 ticket.lineas$NOMBRETIENDA <- str_trim(ticket.lineas$NOMBRETIENDA)
 ticket.lineas$CODPRODUCTO <- str_trim(ticket.lineas$CODPRODUCTO)
 ticket.lineas$CODVENTA <- str_trim(ticket.lineas$CODVENTA)
 producto$DESCRIPCIÓN <- str_trim(producto$DESCRIPCIÓN)
+producto$NOMBRESUBFAMILIA <- str_trim(producto$NOMBRESUBFAMILIA)
+subfamilia$NOMBRESUBFAMILIA <- str_trim(subfamilia$NOMBRESUBFAMILIA)
+subfamilia$NOMBREFAMILIA <- str_trim(subfamilia$NOMBREFAMILIA)
+familia$NOMBREFAMILIA <- str_trim(familia$NOMBREFAMILIA)
+familia$NOMBRESECCIÓN <- str_trim(familia$NOMBRESECCIÓN)
+cliente$CODCLIENTE <- str_trim(cliente$CODCLIENTE)
+
+
 
 # To define association rules, my initial approach is: to merge ticket dataframes (cabecera + lineas) and afterwards merge products as well
 # then to define a distribution table regarding some indicators such as product name to finally come up with the binarization / apriori / eclat, etc
