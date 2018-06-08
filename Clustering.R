@@ -5,7 +5,8 @@ library(clustMixType)
 library(stringr)
 
 year <- lubridate::year(Sys.Date())
-
+joven <- cliente[(year - cliente$ANYONACIMIENTO) <= 38, ]
+nrow(joven)
 cliente$ANYONACIMIENTO <- as.numeric(substr(cliente$FECHANACIMIENTO, 0, 4))
 cliente$GRUPOEDAD <- ifelse((year - cliente$ANYONACIMIENTO) <= 29, "JOVEN", ifelse((year - cliente$ANYONACIMIENTO) <= 65, "ADULTO", "MAYOR"))
 cliente$GRUPOEDAD <- as.factor(cliente$GRUPOEDAD)
@@ -18,30 +19,25 @@ kable ( data.frame ( variables= names (res), clase= as.vector (res)))
 print(unlist(lapply(cliente, function(x) any(is.na(x))))) # NAs NUMEROHIJOS
 cliente[is.na(cliente)] <- 0
 
-unicos <- unique(cliente[c("PROFESIÓN")])
-unicos <- sapply(unicos, str_trim)
 
-
-map[[key]] <- 4
-
-unicos <- str_trim(unicos)
 # Reducting the dimensions
 colnames(cliente)
 x <- cliente[, c("SEXO", "ESTADOCIVIL", "PROFESIÓN", "NUMEROHIJOS", "REGION", "NACIONALIDAD", "GRUPOEDAD")]
 str(x)
 
+x$PROFESIÓN <- as.factor(gsub("ECONOMISTAS,ABOGADOS & ADMIN.EMPRESAS", "ECON, ABOG./ADMIN", x$PROFESIÓN))
+x$PROFESIÓN <- as.factor(gsub("INGENIEROS & ESPECIALISTAS", "INGEN./ESPEC.", x$PROFESIÓN))
+x$PROFESIÓN <- as.factor(gsub("DOCTORES & PROFESIONALES DE LA SALUD", "DR./PROFES. SALUD", x$PROFESIÓN))
+x$PROFESIÓN <- as.factor(gsub("ARCHITECTOS,DECORADORES & HUMANISTAS", "ARCH, DECOR./HUM.", x$PROFESIÓN))
+x$PROFESIÓN <- as.factor(gsub("GERENTES & DIRECTIVOS", "GERENTE/DIRECTIVO", x$PROFESIÓN))
+
+people <- x[x$SEXO!="EMPRESA",]
+
 # apply k prototypes
-l <- lambdaest(x)
-kpres <- kproto(x, 4, lambda = l)
+l <- lambdaest(people)
+kpres <- kproto(people, 4, lambda = l)
+clprofiles(kpres, people)
 
 
-# in real world clusters are often not as clear cut
-# by variation of lambda the emphasize is shifted towards factor / numeric variables
-kpres <- kproto(x, 2)
-clprofiles(kpres, x)
-kpres <- kproto(x, 2, lambda = 0.1)
-clprofiles(kpres, x)
-kpres <- kproto(x, 2, lambda = 25)
-clprofiles(kpres, x)
 
 
