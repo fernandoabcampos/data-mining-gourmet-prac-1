@@ -4,7 +4,6 @@ library(plotrix) # pie3d
 library(arules)
 library(arulesViz)
 
-
 path.prefix <- "GourmetDB/"
 path.suffix <- ".csv"
 
@@ -95,19 +94,18 @@ res <- sapply(tp, class)
 kable(data.frame(variables=names(res),clase=as.vector(res)))
 
 # Distribution by NOMBRETIENDA, NOMBREPAIS, FORMAPAGO, MARCA (obviously this is gonna show 6 [head] first elements)
-dist_pais <- table(tp$NOMBREPAIS)
-head(table(tp$NOMBRETIENDA))
-head(dist_pais)
+dist_tienda <- table(tp$NOMBRETIENDA)
+head(dist_tienda)
 head(table(tp$FORMAPAGO))
 head(table(tp$MARCA))
 
-lbls <- paste(names(dist_pais),  ": " , dist_pais, sep= "" ) 
-pie3D(dist_pais
+lbls <- paste(names(dist_tienda),  ": " , dist_tienda, sep= "" ) 
+pie3D(dist_tienda
       , radius= 0.9
       , labelcex=  0.7
       , labels = lbls
       , explode= 0.1
-      , main= "Distribución por País" , col = rainbow(length(lbls)
+      , main= "Distribución de ventas por Tienda" , col = rainbow(length(lbls)
       ))
 
 
@@ -133,8 +131,6 @@ inspect(rules_conf)
 rules_lift <- sort (rules_ppv, by = "lift" , decreasing = TRUE ) 
 inspect(rules_lift)
 summary(quality(rules_ppv))
-
-
 
 
 
